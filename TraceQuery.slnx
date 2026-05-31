@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TraceQuery.Cli/TraceQuery.Cli.csproj" />
+    <Project Path="src/TraceQuery.Core/TraceQuery.Core.csproj" />
+  </Folder>
+</Solution>
