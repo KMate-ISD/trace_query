@@ -2,6 +2,8 @@
 
 /// <summary>
 /// Trace entry / Log entry severity levels enumeration.
+/// Rationale of `enum` as type choice: modeling;
+/// type-safe constants for a finite set of categories.
 /// </summary>
 public enum Severity
 {

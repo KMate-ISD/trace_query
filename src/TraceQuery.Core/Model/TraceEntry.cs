@@ -5,10 +5,12 @@ namespace TraceQuery.Core.Model;
 /// <summary>
 /// Single trace/log entry.
 /// Timestamp (timezone/UTC-aware), severity, source/component identifier, message.
+/// Rationale of `class` as type choice:
+/// size > 16 Bytes (struct guideline), contains reference, has identity.
 /// </summary>
 public class TraceEntry
 {
-    /// <summary>Constructor for Trace class.</summary>
+    /// <summary>Constructor for TraceEntry class.</summary>
     /// <param name="timestamp">DateTimeOffset</param>
     /// <param name="severity">Severity enum</param>
     /// <param name="component">Byte</param>
@@ -28,11 +30,10 @@ public class TraceEntry
     public Severity Severity { get; }
 
     /// <summary>Source / Component ID.
-    /// Justification of Byte type: memory overhead of storing strings.
-    /// Computational overhead of comparing TraceEntry components on analysis.
-    /// A component to ID lookup table (and reverse counterpart) is proposed.
-    /// Conversion would happen at parsing.
-    /// Component ID could be refactored to an enum later, if needed.
+    /// Justification of Byte type: suspected memory overhead of storing many strings.
+    /// Possible computational overhead of comparing TraceEntry components on analysis.
+    /// TODO: component->id (ingestion), id->component (reporting)
+    /// note: Complexity introduced without profiling. Monitor debt carefully.
     /// </summary>
     public Byte Component { get; }
 
