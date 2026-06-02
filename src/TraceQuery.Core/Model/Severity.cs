@@ -1,8 +1,7 @@
-﻿namespace TraceQuery.Core;
+﻿namespace TraceQuery.Core.Model;
 
 /// <summary>
 /// Trace entry / Log entry severity levels enumeration.
-/// Rationale for choosing `enum` type: Readability and enum being a value type, read is fast.
 /// </summary>
 public enum Severity
 {
