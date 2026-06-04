@@ -7,7 +7,7 @@ namespace TraceQuery.Core.Ingestion;
 /// Reads source file line-by-line.
 /// Disposable: resource owning object with deterministic cleanup.
 /// </summary>
-public class FileReader : IDisposable
+public sealed class FileReader : IDisposable
 {
     private readonly StreamReader _streamReader;
 
