@@ -10,14 +10,18 @@ internal class Program
             String path = args[0];
             String? lineBuffer;
 
+            // Temporary cli-core wiring.
+            // TODO: Rework on deliberate implementation.
             try
             {
-                using TraceFileSource fileReader = new TraceFileSource(path);
+                using TraceFileSource traceFileSource = new TraceFileSource(path);
 
-                while ( null != ( lineBuffer = fileReader.GetNextLine() ) )
+                Byte lineCount = 0;
+                while ( null != ( lineBuffer = traceFileSource.GetNextLine() ) )
                 {
-                    Console.WriteLine(lineBuffer);
+                    ++lineCount;
                 }
+                Console.WriteLine(string.Format("[{0}] {1} line(s) read.", path, lineCount));
             }
             catch (Exception ex)
             {
