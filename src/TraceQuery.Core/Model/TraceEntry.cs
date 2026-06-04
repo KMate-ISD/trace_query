@@ -11,10 +11,10 @@ namespace TraceQuery.Core.Model;
 public class TraceEntry
 {
     /// <summary>Constructor for TraceEntry class.</summary>
-    /// <param name="timestamp">DateTimeOffset</param>
-    /// <param name="severity">Severity enum</param>
-    /// <param name="component">Byte</param>
-    /// <param name="message">String</param>
+    /// <param name="timestamp">Date and time of event with UTC offset.</param>
+    /// <param name="severity">Severity classification of the event.</param>
+    /// <param name="component">ID of component associated with the event.</param>
+    /// <param name="message">Event description.</param>
     public TraceEntry(DateTimeOffset timestamp, Severity severity, Byte component, String? message)
     {
         Timestamp = timestamp;
@@ -23,13 +23,13 @@ public class TraceEntry
         Message = message;
     }
 
-    /// <summary>Time of item logged.</summary>
+    /// <summary>Date and time of event with UTC offset.</summary>
     public DateTimeOffset Timestamp { get; }
 
-    /// <summary>Severity classification of the item.</summary>
+    /// <summary>Severity classification of the event.</summary>
     public Severity Severity { get; }
 
-    /// <summary>Source / Component ID.
+    /// <summary>ID of component associated with the event.
     /// Justification of Byte type: suspected memory overhead of storing many strings.
     /// Possible computational overhead of comparing TraceEntry components on analysis.
     /// TODO: component->id (ingestion), id->component (reporting)
