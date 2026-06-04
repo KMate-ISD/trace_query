@@ -1,0 +1,12 @@
+2026-05-28T08:00:01.124+00:00 | INFO | ApiGateway | Service started, listening on port 8080
+2026-05-28T08:00:01.310+00:00 | TRACE | AuthService | Loading signing keys from keystore
+2026-05-28T08:00:02.005+00:00 | INFO | AuthService | User 4821 authenticated successfully
+2026-05-28T08:00:02.660+00:00 | WARNING | Cache | Hit ratio dropped to 58% over last 60s
+2026-05-28T08:00:03.412+00:00 | INFO | OrderService | Order 90217 accepted for user 4821
+2026-05-28T08:00:03.998+00:00 | ERROR | PaymentService | Gateway timeout after 3000ms for order 90217
+2026-05-28T08:00:04.120+00:00 | INFO | PaymentService | Retrying payment for order 90217 (attempt 2)
+2026-05-28T08:00:04.755+00:00 | INFO | PaymentService | Payment captured for order 90217
+2026-05-28T08:00:05.030+00:00 | TRACE | Database | Connection pool size grown to 12
+2026-05-28T08:00:06.500+00:00 | CRITICAL | Database | Primary node unreachable, failing over to replica
+2026-05-28T08:00:07.880+00:00 | INFO | Database | Failover complete, replica promoted
+2026-05-28T08:00:09.210+02:00 | INFO | Scheduler | Nightly compaction job queued

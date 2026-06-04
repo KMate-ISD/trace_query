@@ -1,0 +1,12 @@
+# trace export from staging-02, 2026-05-29 — DO NOT INGEST HEADER AS RECORD
+2026-05-29T11:15:00.000+00:00 | INFO | ApiGateway | Boot sequence complete
+
+2026-05-29T11:15:01.500+00:00 | debug | Worker | Spawning worker pool (size=8)
+2026-05-29T11:15:02.220+00:00 | INFO | Worker | Job 1 picked up | retrying downstream | nested pipes here
+not-a-timestamp | ERROR | AuthService | Token validation failed
+2026-05-29T11:15:03.000+00:00 | WARNING | Cache |
+2026-05-29T11:15:04.881+00:00 | ERROR
+   2026-05-29T11:15:05.400+00:00 | info | OrderService | Order 90233 accepted   
+2026-13-40T99:99:99.000+00:00 | INFO | Scheduler | Impossible date should fail parse
+garbage line with no structure whatsoever
+2026-05-29T11:15:07.010+00:00 | CRITICAL | PaymentService | Double charge detected for order 90233
