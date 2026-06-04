@@ -7,20 +7,20 @@ namespace TraceQuery.Core.Ingestion;
 /// Reads source file line-by-line.
 /// Disposable: resource owning object with deterministic cleanup.
 /// </summary>
-public sealed class FileReader : IDisposable
+public sealed class TraceFileSource : IDisposable
 {
     private readonly StreamReader _streamReader;
 
     /// <summary>Constructor for FileReader class.</summary>
     /// <param name="path">String?</param>
-    public FileReader(String path)
+    public TraceFileSource(String path)
     {
         _streamReader = new StreamReader(path);
     }
 
     /// <summary>Routes line at cursor position.</summary>
     /// <returns>String?</returns>
-    public String? RouteLine()
+    public String? GetNextLine()
     {
         return _streamReader.ReadLine();
     }

@@ -12,9 +12,9 @@ internal class Program
 
             try
             {
-                using FileReader fileReader = new FileReader(path);
+                using TraceFileSource fileReader = new TraceFileSource(path);
 
-                while ( null != ( lineBuffer = fileReader.RouteLine() ) )
+                while ( null != ( lineBuffer = fileReader.GetNextLine() ) )
                 {
                     Console.WriteLine(lineBuffer);
                 }
