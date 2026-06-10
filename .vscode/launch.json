@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations":
+  [
+    {
+      "name": "TraceQuery.Cli",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/TraceQuery.Cli/bin/Debug/net10.0/TraceQuery.Cli.dll",
+      "args":
+      [
+        ".\\samples\\clean_small.log"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
