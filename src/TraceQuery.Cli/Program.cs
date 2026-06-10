@@ -1,5 +1,7 @@
 ﻿using System;
+using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Ingestion;
+using TraceQuery.Core.Model;
 
 internal class Program
 {
@@ -12,20 +14,41 @@ internal class Program
 
             // Temporary cli-core wiring.
             // TODO: Rework on deliberate implementation.
-            try
             {
-                using TraceFileSource traceFileSource = new TraceFileSource(path);
-
-                Byte lineCount = 0;
-                while ( null != ( lineBuffer = traceFileSource.GetNextLine() ) )
+                try // TraceFileSource usage
                 {
-                    ++lineCount;
+                    using TraceFileSource traceFileSource = new TraceFileSource(path);
+
+                    Byte lineCount = 0;
+                    while ( null != ( lineBuffer = traceFileSource.GetNextLine() ) )
+                    {
+                        ++lineCount;
+                    }
+                    Console.WriteLine(string.Format("[{0}] {1} line(s) read.", path, lineCount));
                 }
-                Console.WriteLine(string.Format("[{0}] {1} line(s) read.", path, lineCount));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                try // IngestionOptions usage
+                {
+                    IngestionOptions config1 = new();
+                    IngestionOptions config2 = new()
+                    {
+                        SeverityThreshold = Severity.Warning,
+                        CommentPrefix = "@",
+                        FieldDelimiter = "\t",
+                    };
+                    IngestionOptions config3 = new()
+                    {
+                        CommentPrefix = String.Empty,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
     }
