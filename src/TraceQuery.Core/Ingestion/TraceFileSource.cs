@@ -11,14 +11,14 @@ public sealed class TraceFileSource : IDisposable
 {
     private readonly StreamReader _streamReader;
 
-    /// <summary>Constructor for FileReader class.</summary>
+    /// <summary>Initializes the owned StreamReader object with the input path.</summary>
     /// <param name="path">Path to trace file to source.</param>
     public TraceFileSource(String path)
     {
         _streamReader = new StreamReader(path);
     }
 
-    /// <summary>Routes line at cursor position.</summary>
+    /// <summary>Fetches line at current cursor position.</summary>
     /// <returns>Next line or null at end of file.</returns>
     public String? GetNextLine()
     {
