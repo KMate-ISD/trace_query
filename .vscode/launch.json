@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/src/TraceQuery.Cli/bin/Debug/net10.0/TraceQuery.Cli.dll",
       "args":
       [
-        ".\\samples\\clean_small.log"
+        ".\\samples\\messy.log"
       ],
       "cwd": "${workspaceFolder}"
     }
