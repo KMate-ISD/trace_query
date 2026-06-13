@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Ingestion;
 using TraceQuery.Core.Model;
+using TraceQuery.Core.TraceLineParser;
 
 internal class Program
 {
@@ -44,6 +47,33 @@ internal class Program
                     {
                         CommentPrefix = String.Empty,
                     };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                try // TraceLineParser usage
+                {
+                    using TraceFileSource traceFileSource = new TraceFileSource(path);
+                    IngestionOptions config1 = new();
+                    List<TraceEntry> traces = new List<TraceEntry>();
+
+                    int traceLineCnt = 0;
+                    int validTraceLineCnt = 0;
+                    while ( null != ( lineBuffer = traceFileSource.GetNextLine() ) )
+                    {
+                        Boolean isParseSuccess = lineBuffer.TryParseTraceLine(config1, out TraceEntry? te);
+
+                        if ( false != isParseSuccess )
+                        {
+                            traces.Add(te!);
+                            ++validTraceLineCnt;
+                        }
+                        ++traceLineCnt;
+                    }
+
+                    Console.WriteLine(string.Format("[{0}] {1} of {2} trace line(s) parsed.", path, validTraceLineCnt, traceLineCnt));
                 }
                 catch (Exception ex)
                 {
