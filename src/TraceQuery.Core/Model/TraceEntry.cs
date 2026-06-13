@@ -15,7 +15,7 @@ public class TraceEntry
     /// <param name="severity">Severity classification of the event.</param>
     /// <param name="component">ID of component associated with the event.</param>
     /// <param name="message">Event description.</param>
-    public TraceEntry(DateTimeOffset timestamp, Severity severity, int component, String? message)
+    public TraceEntry(DateTimeOffset timestamp, Severity severity, String component, String? message)
     {
         Timestamp = timestamp;
         Severity = severity;
@@ -30,12 +30,10 @@ public class TraceEntry
     public Severity Severity { get; }
 
     /// <summary>ID of component associated with the event.
-    /// Justification of Int type: suspected memory overhead of storing many strings.
-    /// Possible computational overhead of comparing TraceEntry components on analysis.
-    /// TODO: component->id (ingestion), id->component (reporting)
-    /// note: Complexity introduced without profiling. Monitor debt carefully.
+    /// TODO: Switch to int/enum if profiling shows substantial memory overhead due to storing many strings.
+    /// TODO: Switch to int if profiling shows substantial computational overhead when comparing TraceEntry components.
     /// </summary>
-    public int Component { get; }
+    public String Component { get; }
 
     /// <summary>Event description.</summary>
     public String? Message { get; }
