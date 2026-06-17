@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Ingestion;
 using TraceQuery.Core.Model;
-using TraceQuery.Core.TraceLineParser;
 
 internal class Program
 {
