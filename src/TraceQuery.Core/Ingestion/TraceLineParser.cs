@@ -1,9 +1,8 @@
 ﻿using System;
 using TraceQuery.Core.Configuration;
-using TraceQuery.Core.Ingestion;
 using TraceQuery.Core.Model;
 
-namespace TraceQuery.Core.TraceLineParser;
+namespace TraceQuery.Core.Ingestion;
 
 /// <summary>Attempts to turns a raw line handed over by <see cref="TraceFileSource"/> into a <see cref="TraceEntry"/>.</summary>
 public static class TraceLineParser
@@ -23,6 +22,9 @@ public static class TraceLineParser
         out TraceEntry? traceEntry
     )
     {
+        int[] delimiterIndicesBuffer = new int[ValidDelimiterCount];
+        Array.Fill(delimiterIndicesBuffer, NoIndex);
+
         traceEntry = null;
         Boolean isParsableTraceLine = ( false == String.IsNullOrWhiteSpace(traceLine) );
 
@@ -37,9 +39,9 @@ public static class TraceLineParser
 
         if ( false != isParsableTraceLine )
         {
-            isParsableTraceLine = TryGetSegments(traceLine!, options, out int[] delimiterIndices);
+            isParsableTraceLine = TryGetSegments(traceLine!, options, delimiterIndicesBuffer);
 
-            return ( false != ( isParsableTraceLine && TryBuildEntry(traceLine!, options, delimiterIndices, out traceEntry) ) );
+            return ( false != ( isParsableTraceLine && TryBuildEntry(traceLine!, options, delimiterIndicesBuffer, out traceEntry) ) );
         }
         else
         {
@@ -50,50 +52,57 @@ public static class TraceLineParser
 
         static Boolean IsCommentTraceLine(String traceLine, IngestionOptions options)
         {
+            String commentPrefix = options.CommentPrefix;
+            int lenCommentPrefix = commentPrefix.Length;
+            int lenTraceLine = traceLine.Length;
+
             int traceLineCursor = 0;
 
-            while (    ( options.CommentPrefix.Length > traceLineCursor )
-                    && ( options.CommentPrefix[traceLineCursor] == traceLine[traceLineCursor] ) )
+            while (    ( lenTraceLine > traceLineCursor )
+                    && ( lenCommentPrefix > traceLineCursor )
+                    && ( commentPrefix[traceLineCursor] == traceLine[traceLineCursor] ) )
             {
                 ++traceLineCursor;
             }
 
-            return ( options.CommentPrefix.Length == traceLineCursor ); // True when traceLine is a comment.
+            return ( lenCommentPrefix == traceLineCursor ); // True when traceLine is a comment.
         }
 
-        static Boolean TryGetSegments(String traceLine, IngestionOptions options, out int[] delimiterIndices)
+        static Boolean TryGetSegments(String traceLine, IngestionOptions options, int[] delimiterIndices)
         {
+            String fieldDelimiter = options.FieldDelimiter;
+            int lenTraceLine = traceLine.Length;
+            int lenFieldDelimiter = fieldDelimiter.Length;
+
             int traceLineCursor = 0;
             int delimiterCount = 0;
             int delimiterCursor = 0;
-            int delimiterLength = options.FieldDelimiter.Length;
-
-            delimiterIndices = new int[ValidDelimiterCount];
-            Array.Fill(delimiterIndices, NoIndex);
 
             while (    ( ValidDelimiterCount > delimiterCount )
-                    && ( traceLine!.Length > traceLineCursor ) )
+                    && ( lenTraceLine > traceLineCursor ) )
             {
-                if ( options.FieldDelimiter[0] == traceLine[traceLineCursor] )
+                if ( fieldDelimiter[0] == traceLine[traceLineCursor] )
                 {
-                    while (    ( traceLine!.Length > traceLineCursor )
-                            && ( options.FieldDelimiter.Length > delimiterCursor )
-                            && ( options.FieldDelimiter[delimiterCursor] == traceLine[traceLineCursor] ) )
+                    while (    ( lenTraceLine > traceLineCursor )
+                            && ( lenFieldDelimiter > delimiterCursor )
+                            && ( fieldDelimiter[delimiterCursor] == traceLine[traceLineCursor] ) )
                     {
                         traceLineCursor++;
                         delimiterCursor++;
                     }
 
-                    if ( delimiterLength == delimiterCursor )
+                    if ( lenFieldDelimiter == delimiterCursor )
                     { // Delimiter found.
-                        delimiterIndices[delimiterCount] = traceLineCursor - delimiterLength;
+                        delimiterIndices[delimiterCount] = traceLineCursor - lenFieldDelimiter;
                         delimiterCount += 1;
                     }
 
                     delimiterCursor = 0;
                 }
-
-                traceLineCursor++;
+                else
+                {
+                    traceLineCursor++;   
+                }
             }
 
             return ( ValidDelimiterCount == delimiterCount );
@@ -101,13 +110,15 @@ public static class TraceLineParser
 
         static Boolean TryBuildEntry(String traceLine, IngestionOptions options, int[] delimiterIndices, out TraceEntry? traceEntry)
         {
+            int lenFieldDelimiter = options.FieldDelimiter.Length;
+
             traceEntry = null; // Initialize out parameter to null.
 
             // TraceEntry item start indices:
             int timestampStart  = 0;
-            int severityStart   = delimiterIndices[0] + options.FieldDelimiter.Length;
-            int componentStart  = delimiterIndices[1] + options.FieldDelimiter.Length;
-            int messageStart    = delimiterIndices[2] + options.FieldDelimiter.Length;
+            int severityStart   = delimiterIndices[0] + lenFieldDelimiter;
+            int componentStart  = delimiterIndices[1] + lenFieldDelimiter;
+            int messageStart    = delimiterIndices[2] + lenFieldDelimiter;
 
             // TraceEntry item end indices:
             int timestampLength = delimiterIndices[0];
@@ -121,7 +132,12 @@ public static class TraceLineParser
             ReadOnlySpan<char> componentSpan = traceLine.AsSpan( componentStart , componentLength ).Trim();
             ReadOnlySpan<char> messageSpan   = traceLine.AsSpan( messageStart   , messageLength   ).Trim();
             
-            Boolean isValidTimestamp = DateTimeOffset.TryParse(timestampSpan, out DateTimeOffset validatedTimestamp); // Validate timestamp.
+            Boolean isValidTimestamp = DateTimeOffset.TryParseExact(
+                timestampSpan,
+                "yyyy-MM-dd'T'HH:mm:ss.fffzzz",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out DateTimeOffset validatedTimestamp); // Validate timestamp.
             Boolean isValidSeverity = Severity.TryParse(severitySpan, true, out Severity validatedSeverity); // Validate severity.
             Boolean isValidTraceLine = ( false != ( isValidTimestamp && isValidSeverity ) ); // True if TraceEntry instance can be built.
 
