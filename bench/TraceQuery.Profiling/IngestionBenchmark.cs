@@ -16,12 +16,12 @@ public class IngestionBenchmark
 
     private static readonly IngestionOptions Options = new();
 
-    private List<string> SampleTraceLines = null!;
+    private List<String> SampleTraceLines = null!;
 
     [Benchmark]
     public void UsingTLP()
     {
-        var lines = SampleTraceLines;
+        List<String> lines = SampleTraceLines;
 
         for (int i = 0; i < lines.Count; i++)
         {
@@ -32,7 +32,7 @@ public class IngestionBenchmark
     [Benchmark]
     public void UsingTLPSimple()
     {
-        var lines = SampleTraceLines;
+        List<String> lines = SampleTraceLines;
 
         for (int i = 0; i < lines.Count; i++)
         {
@@ -48,7 +48,7 @@ public class IngestionBenchmark
 
     private static List<String> BuildTraceLines()
     {
-        var list = new List<String>(IterationCount);
+        List<String> list = new List<String>(IterationCount);
 
         for (int i = 0; i < IterationCount; i++)
         {
@@ -60,28 +60,28 @@ public class IngestionBenchmark
 
     private static string TraceLineBuilder(int seed)
     {
-        var random = new Random(seed);
+        Random random = new Random(seed);
 
         // Generate timestamp:
         long min = DateTimeOffset.UnixEpoch.ToUnixTimeMilliseconds();
         long max = DateTimeOffset.UtcNow.AddYears(10).ToUnixTimeMilliseconds();
         long range = max - min;
         long rdtUnix = min + (Math.Abs(random.NextInt64()) % range);
-        var timestamp = DateTimeOffset.FromUnixTimeMilliseconds(rdtUnix);
+        DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(rdtUnix);
 
         // Generate severity:
         int severityCount = Enum.GetValues<Severity>().Length;
-        var severity = (Severity)(random.Next() % severityCount);
+        Severity severity = (Severity)(random.Next() % severityCount);
 
         // Generate component:
         int componentLength = random.Next(4, 16);
-        string component = random.GetHexString(componentLength);
+        String component = random.GetHexString(componentLength);
 
         // Generate message:
         int messageLength = random.Next(32, 64);
-        string message = random.GetHexString(messageLength);
+        String message = random.GetHexString(messageLength);
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
         if ( 0 == random.Next(43) )
         {
@@ -89,13 +89,16 @@ public class IngestionBenchmark
         }
         else
         { 
-            string delimiter = Options.FieldDelimiter;
+            const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
+            sb.Append(timestamp.ToString(TimestampFormat));
 
-            sb.Append(timestamp);
+            String delimiter = Options.FieldDelimiter;
             sb.Append(delimiter);
             sb.Append(severity);
+
             sb.Append(delimiter);
             sb.Append(component);
+            
             sb.Append(delimiter);
         }
 
