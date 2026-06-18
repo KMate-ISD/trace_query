@@ -132,13 +132,18 @@ public static class TraceLineParser
             ReadOnlySpan<char> componentSpan = traceLine.AsSpan( componentStart , componentLength ).Trim();
             ReadOnlySpan<char> messageSpan   = traceLine.AsSpan( messageStart   , messageLength   ).Trim();
             
+            const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
             Boolean isValidTimestamp = DateTimeOffset.TryParseExact(
                 timestampSpan,
-                "yyyy-MM-dd'T'HH:mm:ss.fffzzz",
+                TimestampFormat,
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None,
-                out DateTimeOffset validatedTimestamp); // Validate timestamp.
-            Boolean isValidSeverity = Severity.TryParse(severitySpan, true, out Severity validatedSeverity); // Validate severity.
+                out DateTimeOffset validatedTimestamp
+            ); // Validate timestamp.
+
+            const Boolean IgnoreCase = true;
+            Boolean isValidSeverity = Severity.TryParse(severitySpan, IgnoreCase, out Severity validatedSeverity); // Validate severity.
+
             Boolean isValidTraceLine = ( false != ( isValidTimestamp && isValidSeverity ) ); // True if TraceEntry instance can be built.
 
             if ( false != isValidTraceLine )

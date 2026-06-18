@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using TraceQuery.Core.Model;
 
 namespace TraceQuery.Core.Configuration;
