@@ -3,7 +3,7 @@
   "configurations":
   [
     {
-      "name": "TraceQuery.Cli",
+      "name": "TraceQuery.Cli (Debug)",
       "type": "coreclr",
       "request": "launch",
       "program": "${workspaceFolder}/src/TraceQuery.Cli/bin/Debug/net10.0/TraceQuery.Cli.dll",
@@ -11,6 +11,13 @@
       [
         ".\\samples\\messy.log"
       ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "TraceQuery Benchmarks (Release)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/bench/TraceQuery.Profiling/bin/Release/net10.0/TraceQuery.Profiling.dll",
       "cwd": "${workspaceFolder}"
     }
   ]
