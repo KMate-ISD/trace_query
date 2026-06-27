@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Ingestion;
 using TraceQuery.Core.Model;
-using TLPSimple = TraceQuery.Core.Ingestion.TraceLineParser_Simple;
 
 internal class Program
 {
@@ -62,7 +61,7 @@ internal class Program
                     int validTraceLineCnt = 0;
                     while ( null != ( lineBuffer = traceFileSource.GetNextLine() ) )
                     {
-                        Boolean isParseSuccess = TLPSimple.TryParseTraceLine(lineBuffer, config1, out TraceEntry? te);
+                        Boolean isParseSuccess = TraceLineParser.TryParseTraceLine(lineBuffer, config1, out TraceEntry? te);
 
                         if ( false != isParseSuccess )
                         {
