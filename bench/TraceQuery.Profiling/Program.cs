@@ -7,7 +7,7 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var config = ManualConfig.Create(DefaultConfig.Instance);
+        ManualConfig config = ManualConfig.Create(DefaultConfig.Instance);
         
         BenchmarkRunner.Run<IngestionBenchmark>(config);
     }

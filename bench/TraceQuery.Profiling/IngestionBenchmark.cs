@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using TraceQuery.Alt.Ingestion;
 using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Ingestion;
 using TraceQuery.Core.Model;
@@ -11,8 +12,8 @@ namespace TraceQuery.Profiling;
 [MemoryDiagnoser]
 public class IngestionBenchmark
 {
-    private const int IterationCount = 10_000;
-    private const int Seed = 12345;
+    private const int IterationCount = 100_000;
+    private readonly int Seed = (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() & int.MaxValue);
 
     private static readonly IngestionOptions Options = new();
 
@@ -40,25 +41,36 @@ public class IngestionBenchmark
         }
     }
 
+    [Benchmark]
+    public void UsingTLPNoAlloc()
+    {
+        List<String> lines = SampleTraceLines;
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            TraceLineParser_NoAlloc.TryParseTraceLine(lines[i], Options, out _);
+        }
+    }
+
     [GlobalSetup]
     public void Setup()
     {
-        SampleTraceLines = BuildTraceLines();
+        SampleTraceLines = BuildTraceLines(Seed);
     }
 
-    private static List<String> BuildTraceLines()
+    private static List<String> BuildTraceLines(int seed)
     {
         List<String> list = new List<String>(IterationCount);
 
         for (int i = 0; i < IterationCount; i++)
         {
-            list.Add(TraceLineBuilder(Seed + i));
+            list.Add(TraceLineBuilder(seed + i));
         }
 
         return list;
     }
 
-    private static string TraceLineBuilder(int seed)
+    private static String TraceLineBuilder(int seed)
     {
         Random random = new Random(seed);
 
@@ -81,29 +93,39 @@ public class IngestionBenchmark
         int messageLength = random.Next(32, 64);
         String message = random.GetHexString(messageLength);
 
-        StringBuilder sb = new StringBuilder();
+        // Build trace line:
+        BuildTraceLine(out String traceLine);
 
-        if ( 0 == random.Next(43) )
+        return traceLine;
+
+        // ------ Local functions ------
+
+        void BuildTraceLine(out String traceLine)
         {
-            sb.Append(Options.CommentPrefix);
+            StringBuilder sb = new StringBuilder();
+
+            if ( 0 == random.Next(43) )
+            {
+                sb.Append(Options.CommentPrefix);
+            }
+            else
+            { 
+                const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
+                sb.Append(timestamp.ToString(TimestampFormat));
+
+                String delimiter = Options.FieldDelimiter;
+                sb.Append(delimiter);
+                sb.Append(severity);
+
+                sb.Append(delimiter);
+                sb.Append(component);
+
+                sb.Append(delimiter);
+            }
+
+            sb.Append(message);
+
+            traceLine = sb.ToString();
         }
-        else
-        { 
-            const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
-            sb.Append(timestamp.ToString(TimestampFormat));
-
-            String delimiter = Options.FieldDelimiter;
-            sb.Append(delimiter);
-            sb.Append(severity);
-
-            sb.Append(delimiter);
-            sb.Append(component);
-            
-            sb.Append(delimiter);
-        }
-
-        sb.Append(message);
-
-        return sb.ToString();
     }
 }
