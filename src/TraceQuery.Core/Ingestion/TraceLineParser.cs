@@ -7,8 +7,9 @@ namespace TraceQuery.Core.Ingestion;
 /// <summary>Attempts to turns a raw line handed over by <see cref="TraceFileSource"/> into a <see cref="TraceEntry"/>.</summary>
 public static class TraceLineParser
 {
-    private const int NoIndex = -1; // Marks that a certain index doesn't exist.
     private const int ValidDelimiterCount = 3; // A well formed trace line has 4 segments per TRACE_FORMAT.md.
+    const Boolean IgnoreCase = true;
+    const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
 
     /// <summary>Tries parsing a line provided by <see cref="TraceFileSource"/>.</summary>
     /// <param name="traceLine">The line to be parsed.</param>
@@ -22,15 +23,14 @@ public static class TraceLineParser
         out TraceEntry? traceEntry
     )
     {
-        int[] delimiterIndicesBuffer = new int[ValidDelimiterCount];
-        Array.Fill(delimiterIndicesBuffer, NoIndex);
+        Span<int> delimiterIndicesBuffer = stackalloc int[ValidDelimiterCount];
 
         traceEntry = null;
         Boolean isParsableTraceLine = ( false == String.IsNullOrWhiteSpace(traceLine) );
 
         if ( false != isParsableTraceLine )
         {
-            isParsableTraceLine = ( false == IsCommentTraceLine(traceLine!, options) );
+            isParsableTraceLine = ( false == IsCommentTraceLine(traceLine.AsSpan(), options.CommentPrefix.AsSpan()) );
         }
         else
         {
@@ -39,9 +39,10 @@ public static class TraceLineParser
 
         if ( false != isParsableTraceLine )
         {
-            isParsableTraceLine = TryGetSegments(traceLine!, options, delimiterIndicesBuffer);
+            ReadOnlySpan<Char> fieldDelimiter = options.FieldDelimiter.AsSpan();
+            isParsableTraceLine = TryGetSegments(traceLine.AsSpan(), fieldDelimiter, delimiterIndicesBuffer);
 
-            return ( false != ( isParsableTraceLine && TryBuildEntry(traceLine!, options, delimiterIndicesBuffer, out traceEntry) ) );
+            return ( false != ( isParsableTraceLine && TryBuildEntry(traceLine.AsSpan(), fieldDelimiter.Length, delimiterIndicesBuffer, out traceEntry) ) );
         }
         else
         {
@@ -50,9 +51,8 @@ public static class TraceLineParser
 
         // ------ Local functions ------
 
-        static Boolean IsCommentTraceLine(String traceLine, IngestionOptions options)
+        static Boolean IsCommentTraceLine(ReadOnlySpan<Char> traceLine, ReadOnlySpan<Char> commentPrefix)
         {
-            String commentPrefix = options.CommentPrefix;
             int lenCommentPrefix = commentPrefix.Length;
             int lenTraceLine = traceLine.Length;
 
@@ -68,9 +68,8 @@ public static class TraceLineParser
             return ( lenCommentPrefix == traceLineCursor ); // True when traceLine is a comment.
         }
 
-        static Boolean TryGetSegments(String traceLine, IngestionOptions options, int[] delimiterIndices)
+        static Boolean TryGetSegments(ReadOnlySpan<Char> traceLine, ReadOnlySpan<Char> fieldDelimiter, Span<int> delimiterIndices)
         {
-            String fieldDelimiter = options.FieldDelimiter;
             int lenTraceLine = traceLine.Length;
             int lenFieldDelimiter = fieldDelimiter.Length;
 
@@ -108,10 +107,8 @@ public static class TraceLineParser
             return ( ValidDelimiterCount == delimiterCount );
         }
 
-        static Boolean TryBuildEntry(String traceLine, IngestionOptions options, int[] delimiterIndices, out TraceEntry? traceEntry)
+        static Boolean TryBuildEntry(ReadOnlySpan<Char> traceLine, int lenFieldDelimiter, Span<int> delimiterIndices, out TraceEntry? traceEntry)
         {
-            int lenFieldDelimiter = options.FieldDelimiter.Length;
-
             traceEntry = null; // Initialize out parameter to null.
 
             // TraceEntry item start indices:
@@ -127,12 +124,11 @@ public static class TraceLineParser
             int messageLength   = traceLine.Length - messageStart;
 
             // TraceEntry items:
-            ReadOnlySpan<char> timestampSpan = traceLine.AsSpan( timestampStart , timestampLength ).Trim();
-            ReadOnlySpan<char> severitySpan  = traceLine.AsSpan( severityStart  , severityLength  ).Trim();
-            ReadOnlySpan<char> componentSpan = traceLine.AsSpan( componentStart , componentLength ).Trim();
-            ReadOnlySpan<char> messageSpan   = traceLine.AsSpan( messageStart   , messageLength   ).Trim();
+            ReadOnlySpan<char> timestampSpan = traceLine.Slice(timestampStart, timestampLength).Trim();
+            ReadOnlySpan<char> severitySpan  = traceLine.Slice(severityStart , severityLength ).Trim();
+            ReadOnlySpan<char> componentSpan = traceLine.Slice(componentStart, componentLength).Trim();
+            ReadOnlySpan<char> messageSpan   = traceLine.Slice(messageStart  , messageLength  ).Trim();
             
-            const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
             Boolean isValidTimestamp = DateTimeOffset.TryParseExact(
                 timestampSpan,
                 TimestampFormat,
@@ -140,8 +136,7 @@ public static class TraceLineParser
                 System.Globalization.DateTimeStyles.None,
                 out DateTimeOffset validatedTimestamp
             ); // Validate timestamp.
-
-            const Boolean IgnoreCase = true;
+            
             Boolean isValidSeverity = Severity.TryParse(severitySpan, IgnoreCase, out Severity validatedSeverity); // Validate severity.
 
             Boolean isValidTraceLine = ( false != ( isValidTimestamp && isValidSeverity ) ); // True if TraceEntry instance can be built.
