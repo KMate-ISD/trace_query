@@ -2,20 +2,14 @@
 using TraceQuery.Core.Configuration;
 using TraceQuery.Core.Model;
 
-namespace TraceQuery.Core.Ingestion;
+namespace TraceQuery.Alt.Ingestion;
 
 /// <summary>Attempts to turns a raw line handed over by <see cref="TraceFileSource"/> into a <see cref="TraceEntry"/>.</summary>
 public static class TraceLineParser_Simple
 {
-    private enum TraceLineSegmentIndices
-    {
-        Timestamp,
-        Severity,
-        Component,
-        Message,
-    } // Segment indices of intermediary String array during parsing a raw trace line.
-
-    private const int ValidSegmentCount = 4; // A well formed trace line has 4 segments per TRACE_FORMAT.md.
+    const int ValidSegmentCount = 4; // A well formed trace line has 4 segments per TRACE_FORMAT.md.
+    const Boolean IgnoreCase = true;
+    const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
 
     /// <summary>Tries parsing a line provided by <see cref="TraceFileSource"/>.</summary>
     /// <param name="traceLine">The line to be parsed.</param>
@@ -49,8 +43,7 @@ public static class TraceLineParser_Simple
             ReadOnlySpan<Char> severity  = traceLineSegments[(int)TraceLineSegmentIndices.Severity].AsSpan().Trim();
             ReadOnlySpan<Char> component = traceLineSegments[(int)TraceLineSegmentIndices.Component].AsSpan().Trim();
             ReadOnlySpan<Char> message   = traceLineSegments[(int)TraceLineSegmentIndices.Message].AsSpan().Trim();
-
-            const String TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fffzzz";
+            
             Boolean isValidTimestamp = DateTimeOffset.TryParseExact(
                 timestamp,
                 TimestampFormat,
@@ -58,8 +51,7 @@ public static class TraceLineParser_Simple
                 System.Globalization.DateTimeStyles.None,
                 out DateTimeOffset validatedTimestamp
             ); // Validate timestamp.
-
-            const Boolean IgnoreCase = true;
+            
             Boolean isValidSeverity = Severity.TryParse(severity, IgnoreCase, out Severity validatedSeverity); // Validate severity.
 
             Boolean isValidTraceLine = ( isValidTimestamp && isValidSeverity ); // True if TraceEntry instance can be built.
@@ -77,4 +69,12 @@ public static class TraceLineParser_Simple
             return isValidTraceLine;
         }
     }
+
+    private enum TraceLineSegmentIndices
+    {
+        Timestamp,
+        Severity,
+        Component,
+        Message,
+    } // Segment indices of intermediary String array during parsing a raw trace line.
 }
