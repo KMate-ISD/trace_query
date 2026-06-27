@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TraceQuery.Core\TraceQuery.Core.csproj" />
+    <ProjectReference Include="..\..\alternatives\TraceQuery.Alt\TraceQuery.Alt.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

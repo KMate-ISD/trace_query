@@ -1,9 +1,16 @@
 <Solution>
+
   <Folder Name="/src/">
     <Project Path="src/TraceQuery.Cli/TraceQuery.Cli.csproj" />
     <Project Path="src/TraceQuery.Core/TraceQuery.Core.csproj" />
   </Folder>
+
+  <Folder Name="/alternatives/">
+    <Project Path="alternatives/TraceQuery.Alt/TraceQuery.Alt.csproj" />
+  </Folder>
+
   <Folder Name="/bench/">
     <Project Path="bench/TraceQuery.Profiling/TraceQuery.Profiling.csproj" />
   </Folder>
+  
 </Solution>
